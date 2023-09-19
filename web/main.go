@@ -4,6 +4,10 @@ import (
 	"fmt"
 	"net/http"
 	"text/template"
+
+	"database/sql"
+
+	_ "github.com/go-sql-driver/mysql"
 )
 
 type Post struct {
@@ -12,7 +16,21 @@ type Post struct {
 	Body  string
 }
 
+var db, err = sql.Open("mysql", "root:root@/go_course?charset=utf8")
+
+func checkErr(err error) {
+	if err != nil {
+		panic(err)
+	}
+}
+
 func main() {
+
+	stmt, err := db.Prepare("INSERT INTO posts(title, body) VALUES(?, ?)")
+	checkErr(err)
+
+	_, err = stmt.Exec("FullCycle", "FullCycle Rocks!")
+	checkErr(err)
 
 	// Definir a rota "/" e a função que será executada
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
