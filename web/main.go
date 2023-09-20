@@ -25,24 +25,33 @@ func checkErr(err error) {
 }
 
 func main() {
+	// Insert Data
+	// stmt, err := db.Prepare("INSERT INTO posts(title, body) VALUES(?, ?)")
+	// checkErr(err)
 
-	stmt, err := db.Prepare("INSERT INTO posts(title, body) VALUES(?, ?)")
+	// _, err = stmt.Exec("FullCycle", "FullCycle Rocks!")
+	// checkErr(err)
+
+	rows, err := db.Query("SELECT id, title, body FROM posts")
 	checkErr(err)
 
-	_, err = stmt.Exec("FullCycle", "FullCycle Rocks!")
-	checkErr(err)
+	items := []Post{}
+
+	for rows.Next() {
+		item := Post{}
+		err = rows.Scan(&item.Id, &item.Title, &item.Body)
+		checkErr(err)
+		items = append(items, item)
+	}
+
+	db.Close()
 
 	// Definir a rota "/" e a função que será executada
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		post := Post{Id: 1, Title: "Unamed Title", Body: "No Content"}
-
-		if title := r.FormValue("title"); title != "" {
-			post.Title = title
-		}
 
 		// ParseFiles: ler o arquivo e retornar um template
-		t := template.Must(template.ParseFiles("./web/templates/index.html"))
-		if err := t.Execute(w, post); err != nil {
+		t := template.Must(template.ParseFiles("templates/index.html"))
+		if err := t.Execute(w, items); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 		}
 	})
