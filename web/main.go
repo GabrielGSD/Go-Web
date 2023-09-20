@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"net/http"
+	"strconv"
 	"text/template"
 
 	"database/sql"
@@ -39,10 +40,21 @@ func main() {
 	r.PathPrefix("/static/").Handler(http.StripPrefix("/static/", http.FileServer(http.Dir("static/"))))
 
 	r.HandleFunc("/", HomeHandler)
+	r.HandleFunc("/{id}/view", ViewHandler)
 
 	// Ler a minha porta 8080 e executar o meu servidor
 	// r -> rotas
 	fmt.Println(http.ListenAndServe(":8080", r))
+}
+
+func GetPostById(id int) Post {
+	row := db.QueryRow("SELECT * FROM posts WHERE id = ?", id)
+	post := Post{}
+
+	err := row.Scan(&post.Id, &post.Title, &post.Body)
+	checkErr(err)
+
+	return post
 }
 
 func ListPosts() []Post {
@@ -65,6 +77,21 @@ func HomeHandler(w http.ResponseWriter, r *http.Request) {
 	// ParseFiles: ler o arquivo e retornar um template
 	t := template.Must(template.ParseFiles("templates/index.html"))
 	if err := t.Execute(w, ListPosts()); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+}
+
+func ViewHandler(w http.ResponseWriter, r *http.Request) {
+	idStr := mux.Vars(r)["id"]
+
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	t := template.Must(template.ParseFiles("templates/view.html"))
+	if err := t.Execute(w, GetPostById(id)); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 }
