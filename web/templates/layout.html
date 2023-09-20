@@ -12,24 +12,7 @@
 
 <body>
     <div class="container">
-        <div class="d-flex justify-content-between align-items-center">
-            <h1>Posts</h1>
-            <img src="/static/gorillamux.png" alt="Icone Gorilla Mux">
-        </div>
-        <table class="table table-border">
-            <tr>
-                <th>ID</th>
-                <th>Title</th>
-                <th>Action</th>
-            </tr>
-            {{ range $key, $value := . }}
-            <tr>
-                <td>{{ $value.Id }}</td>
-                <td>{{ $value.Title }}</td>
-                <td>{{ $value.Body }}</td>
-            </tr>
-            {{ end }}
-        </table>
+        {{ template "body" .}}
     </div>
 </body>
 

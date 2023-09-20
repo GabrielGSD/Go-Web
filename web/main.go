@@ -75,7 +75,7 @@ func ListPosts() []Post {
 
 func HomeHandler(w http.ResponseWriter, r *http.Request) {
 	// ParseFiles: ler o arquivo e retornar um template
-	t := template.Must(template.ParseFiles("templates/index.html"))
+	t := template.Must(template.ParseFiles("templates/layout.html", "templates/list.html"))
 	if err := t.Execute(w, ListPosts()); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
@@ -90,7 +90,7 @@ func ViewHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	t := template.Must(template.ParseFiles("templates/view.html"))
+	t := template.Must(template.ParseFiles("templates/layout.html", "templates/view.html"))
 	if err := t.Execute(w, GetPostById(id)); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
