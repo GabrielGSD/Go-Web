@@ -8,6 +8,7 @@ import (
 	"database/sql"
 
 	_ "github.com/go-sql-driver/mysql"
+	"github.com/gorilla/mux"
 )
 
 type Post struct {
@@ -32,6 +33,19 @@ func main() {
 	// _, err = stmt.Exec("FullCycle", "FullCycle Rocks!")
 	// checkErr(err)
 
+	// Definição de rotas
+	r := mux.NewRouter()
+	// http.FileServer: Onde está os arquivos estáticos
+	r.PathPrefix("/static/").Handler(http.StripPrefix("/static/", http.FileServer(http.Dir("static/"))))
+
+	r.HandleFunc("/", HomeHandler)
+
+	// Ler a minha porta 8080 e executar o meu servidor
+	// r -> rotas
+	fmt.Println(http.ListenAndServe(":8080", r))
+}
+
+func ListPosts() []Post {
 	rows, err := db.Query("SELECT id, title, body FROM posts")
 	checkErr(err)
 
@@ -44,17 +58,13 @@ func main() {
 		items = append(items, item)
 	}
 
-	db.Close()
+	return items
+}
 
-	// Definir a rota "/" e a função que será executada
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-
-		// ParseFiles: ler o arquivo e retornar um template
-		t := template.Must(template.ParseFiles("templates/index.html"))
-		if err := t.Execute(w, items); err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-		}
-	})
-	// Ler a minha porta 8080 e executar o meu servidor
-	fmt.Println(http.ListenAndServe(":8080", nil))
+func HomeHandler(w http.ResponseWriter, r *http.Request) {
+	// ParseFiles: ler o arquivo e retornar um template
+	t := template.Must(template.ParseFiles("templates/index.html"))
+	if err := t.Execute(w, ListPosts()); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
 }
